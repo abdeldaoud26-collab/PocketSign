@@ -6,4 +6,4 @@ The source archive preserves the original upstream snapshot, its license, depend
 
 Download the `PocketSign-iPhone` artifact from a successful Actions run. It contains `PocketSign.ipa`, `PocketHello.ipa`, and SHA-256 checksums. Both apps still need signing with your Apple account before installation. No Apple credentials, certificates, or device pairing files belong in this repository or workflow.
 
-Status: build prepared; compilation and on-device testing have not yet been completed.
+Status: PocketSign 0.1.0 and Pocket Hello compiled successfully with the iPhoneOS 26.4 SDK in [build 1](https://github.com/abdeldaoud26-collab/PocketSign/actions/runs/40129152792). Source and packaging tests passed, and the downloaded IPAs passed device-platform, identity, permission, bundled-test, and SHA-256 checks. Both support iOS 15 or later. Apple-account signing and on-device testing remain necessary.
