@@ -1,0 +1,62 @@
+name: Build PocketSign and Pocket Hello
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - PocketSign-source.zip
+      - .github/workflows/build-ios.yml
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pocketsign-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: macos-26
+    timeout-minutes: 45
+    env:
+      DEVELOPER_DIR: /Applications/Xcode_26.4.app/Contents/Developer
+    defaults:
+      run:
+        shell: bash
+        working-directory: source/PocketSignKit
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - name: Unpack source with original symlinks and permissions
+        working-directory: .
+        run: |
+          shasum -a 256 -c SOURCE-SHA256.txt
+          mkdir source
+          unzip -q PocketSign-source.zip -d source
+      - name: Select Xcode and install build tools
+        run: |
+          xcodebuild -version
+          brew install xcodegen ldid
+      - name: Validate pinned source and packaging
+        run: |
+          python3 scripts/fetch_upstream.py
+          python3 -m unittest discover -s tests -v
+      - name: Build physical iPhone apps
+        run: bash scripts/build.sh
+      - name: Save both IPAs and checksums
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        with:
+          name: PocketSign-iPhone
+          path: source/PocketSignKit/dist/
+          if-no-files-found: error
+          retention-days: 14
+      - name: Save build diagnostics
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        with:
+          name: PocketSign-build-logs
+          path: source/PocketSignKit/build/*.log
+          if-no-files-found: ignore
+          retention-days: 7
